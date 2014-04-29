@@ -54,6 +54,11 @@ func (b *Buffer) Write(buf []byte) (int, error) {
 	return n, nil
 }
 
+// Size returns the size of the buffer
+func (b *Buffer) Size() int64 {
+	return b.size
+}
+
 // TotalWritten provides the total number of bytes written
 func (b *Buffer) TotalWritten() int64 {
 	return b.written
