@@ -2,8 +2,18 @@ package circbuf
 
 import (
 	"bytes"
+	"io"
 	"testing"
 )
+
+func TestBuffer_implWriter(t *testing.T) {
+	buf, err := NewBuffer(1)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	
+	var _ io.Writer = buf
+}
 
 func TestBuffer_ShortWrite(t *testing.T) {
 	buf, err := NewBuffer(1024)
