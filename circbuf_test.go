@@ -2,8 +2,13 @@ package circbuf
 
 import (
 	"bytes"
+	"io"
 	"testing"
 )
+
+func TestBuffer_Impl(t *testing.T) {
+	var _ io.Writer = &Buffer{}
+}
 
 func TestBuffer_ShortWrite(t *testing.T) {
 	buf, err := NewBuffer(1024)
