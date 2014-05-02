@@ -79,3 +79,8 @@ func (b *Buffer) Bytes() []byte {
 		return b.data[:b.writeCursor]
 	}
 }
+
+// String returns the contents of the buffer as a string
+func (b *Buffer) String() string {
+	return string(b.Bytes())
+}
