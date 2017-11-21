@@ -26,7 +26,7 @@ func NewBuffer(size int64) (*Buffer, error) {
 	b := &Buffer{
 		size: size,
 		data: make([]byte, size),
-		out: make([]byte, size),
+		out:  make([]byte, size),
 	}
 	return b, nil
 }
@@ -56,10 +56,12 @@ func (b *Buffer) Write(buf []byte) (int, error) {
 	return n, nil
 }
 
-func (b *Buffer) WriteByte(c byte) {
+// WriteByte writes a single byte into the buffer.
+func (b *Buffer) WriteByte(c byte) error {
 	b.data[b.writeCursor] = c
 	b.writeCursor = ((b.writeCursor + 1) % b.size)
-	b.written += 1
+	b.written++
+	return nil
 }
 
 // Size returns the size of the buffer
@@ -89,13 +91,13 @@ func (b *Buffer) Bytes() []byte {
 	}
 }
 
-// Gets a single byte out of the buffer, at the given position.
+// Get returns a single byte out of the buffer, at the given position.
 func (b *Buffer) Get(i int64) (byte, error) {
 	switch {
 	case i >= b.written || i >= b.size:
 		return 0, fmt.Errorf("Index out of bounds: %v", i)
 	case b.written > b.size:
-		return b.data[(b.writeCursor + i) % b.size], nil
+		return b.data[(b.writeCursor+i)%b.size], nil
 	default:
 		return b.data[i], nil
 	}
