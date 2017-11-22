@@ -196,3 +196,46 @@ func TestBuffer_Reset(t *testing.T) {
 		t.Fatalf("bad: %v", string(buf.Bytes()))
 	}
 }
+
+func TestBuffer_WriteByte(t *testing.T) {
+	inp := []byte("hello world")
+
+	buf, err := NewBuffer(3)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	for _, b := range inp {
+		buf.WriteByte(b)
+	}
+
+	expect := []byte("rld")
+	actual := buf.Bytes()
+	if !bytes.Equal(actual, expect) {
+		t.Fatalf("bad: %v", actual)
+	}
+}
+
+func TestBuffer_ReadByte(t *testing.T) {
+	inp := []byte("hello world")
+
+	buf, err := NewBuffer(int64(len(inp)))
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	if _, err := buf.Write([]byte("hell")); err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	if _, err := buf.Write(inp); err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	for i, expect := range inp {
+		actual, _ := buf.Get(int64(i))
+		if expect != actual {
+			t.Fatalf("bad data at index: buf[%v] = %v", i, actual)
+		}
+	}
+}
