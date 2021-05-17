@@ -7,7 +7,8 @@ import (
 )
 
 func TestBuffer_Impl(t *testing.T) {
-	var _ io.Writer = &Buffer{}
+	var _ io.Writer = &anyBuffer{}
+	var _ io.Writer = &po2Buffer{}
 }
 
 func TestBuffer_ShortWrite(t *testing.T) {
@@ -197,10 +198,14 @@ func TestBuffer_Reset(t *testing.T) {
 	}
 }
 
-func TestBuffer_WriteByte(t *testing.T) {
+func testBuffer_WriteByte(t *testing.T, wantPO2 bool) {
 	inp := []byte("hello world")
 
-	buf, err := NewBuffer(3)
+	bufSize := int64(3)
+	if wantPO2 {
+		bufSize = 4
+	}
+	buf, err := NewBuffer(bufSize)
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -209,23 +214,44 @@ func TestBuffer_WriteByte(t *testing.T) {
 		buf.WriteByte(b)
 	}
 
-	expect := []byte("rld")
+	expect := []byte("rld") // 3 bytes
+	if wantPO2 {
+		expect = []byte("orld") // 4 bytes
+	}
+
 	actual := buf.Bytes()
 	if !bytes.Equal(actual, expect) {
 		t.Fatalf("bad: %v", actual)
 	}
 }
 
-func TestBuffer_ReadByte(t *testing.T) {
-	inp := []byte("hello world")
+func TestBuffer_WriteByte_Any(t *testing.T) {
+	testBuffer_WriteByte(t, false)
+}
+
+func TestBuffer_WriteByte_PO2(t *testing.T) {
+	testBuffer_WriteByte(t, true)
+}
+
+func testBuffer_Get(t *testing.T, inp []byte) {
+	initialData := []byte("hell")
+	if len(inp) < len(initialData) {
+		t.Fatalf("input too short for this test case: %q", inp)
+	}
 
 	buf, err := NewBuffer(int64(len(inp)))
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
 
-	if _, err := buf.Write([]byte("hell")); err != nil {
+	if _, err := buf.Write(initialData); err != nil {
 		t.Fatalf("err: %v", err)
+	}
+	for i, expect := range initialData {
+		actual, _ := buf.Get(int64(i))
+		if expect != actual {
+			t.Fatalf("bad data at index: buf[%v] = %v", i, actual)
+		}
 	}
 
 	if _, err := buf.Write(inp); err != nil {
@@ -238,4 +264,12 @@ func TestBuffer_ReadByte(t *testing.T) {
 			t.Fatalf("bad data at index: buf[%v] = %v", i, actual)
 		}
 	}
+}
+
+func TestBuffer_Get_Any(t *testing.T) {
+	testBuffer_Get(t, []byte("hello world")) // 11 bytes
+}
+
+func TestBuffer_Get_PO2(t *testing.T) {
+	testBuffer_Get(t, []byte("hey, hello world")) // 16 bytes
 }
