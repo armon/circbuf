@@ -19,7 +19,7 @@ type Buffer struct {
 // must be greater than 0.
 func NewBuffer(size int64) (*Buffer, error) {
 	if size <= 0 {
-		return nil, fmt.Errorf("Size must be positive")
+		return nil, fmt.Errorf("size must be positive")
 	}
 
 	b := &Buffer{
